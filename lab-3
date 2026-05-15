@@ -1,0 +1,498 @@
+#include <iostream>
+#include <array>
+#include <vector>
+#include <list>
+#include <iterator>
+#include <windows.h>
+
+using namespace std;
+
+int main() {
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+
+    array<int, 10> numbersArray = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    vector<int> numbersVector = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    list<int> numbersList = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    numbersArray[5] = 100;
+    numbersVector[5] = 100;
+    auto current = numbersList.begin();
+    advance(current, 5);
+    *current = 100;
+
+    numbersVector.push_back(11);
+    numbersList.push_back(11);
+
+    cout << "Array: ";
+    for (const auto &element: numbersArray) {
+        cout << element << " ";
+    }
+
+    cout << "\nРазмер: " << numbersArray.size()
+            << " | Первый: " << numbersArray.front()
+            << " | Последний: " << numbersArray.back() << "\n\n";
+
+    cout << "Vector: ";
+    for (const auto &element: numbersVector) {
+        cout << element << " ";
+    }
+
+    cout << "\nРазмер: " << numbersVector.size()
+            << " | Первый: " << numbersVector.front()
+            << " | Последний: " << numbersVector.back() << "\n\n";
+
+    cout << "List: ";
+    for (const auto &element: numbersList) {
+        cout << element << " ";
+    }
+
+    cout << "\nРазмер: " << numbersList.size()
+            << " | Первый: " << numbersList.front()
+            << " | Последний: " << numbersList.back() << "\n\n";
+
+    return 0;
+}
+
+#include <iostream>
+#include <array>
+#include <vector>
+#include <list>
+#include <iterator>
+#include <random>
+#include <algorithm>
+#include <windows.h>
+
+using namespace std;
+
+void printContainer(const vector<int> &numbersVector, const list<int> &numbersList) {
+    cout << "Vector: ";
+    for (const int i: numbersVector) {
+        cout << i << " ";
+    }
+
+    cout << "\nList: ";
+    auto currentElement = numbersList.begin();
+    for (int i = 0; i < numbersList.size(); i++) {
+        cout << *currentElement++ << " ";
+    }
+
+    cout << endl;
+}
+
+int main() {
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+
+    array<int, 100> numbersArray = {};
+    vector<int> numbersVector(100);
+    list<int> numbersList(100);
+
+    random_device randomDevice;
+    mt19937 engine(randomDevice());
+    uniform_int_distribution<int> distribution(1, 1000);
+
+    generate(numbersArray.begin(), numbersArray.end(), [&]() {
+        return distribution(engine);
+    });
+    generate(numbersVector.begin(), numbersVector.end(), [&]() {
+        return distribution(engine);
+    });
+    generate(numbersList.begin(), numbersList.end(), [&]() {
+        return distribution(engine);
+    });
+
+    cout << "Контейнеры до изменений:" << endl;
+    printContainer(numbersVector, numbersList);
+    cout << endl;
+
+    numbersVector.insert(numbersVector.begin() + 50, 999);
+    auto currentListElement = numbersList.begin();
+    advance(currentListElement, 50);
+    numbersList.insert(currentListElement, 999);
+
+    numbersVector.erase(numbersVector.begin() + 25);
+    currentListElement = numbersList.begin();
+    advance(currentListElement, 25);
+    numbersList.erase(currentListElement);
+
+    auto vectorIterator = numbersVector.begin();
+    while (vectorIterator != numbersVector.end()) {
+        if (*vectorIterator > 500)
+            vectorIterator = numbersVector.erase(vectorIterator);
+        else
+            ++vectorIterator;
+    }
+
+    currentListElement = numbersList.begin();
+    while (currentListElement != numbersList.end()) {
+        if (*currentListElement > 500)
+            currentListElement = numbersList.erase(currentListElement);
+        else
+            ++currentListElement;
+    }
+
+    cout << "Контейнеры после изменений:" << endl;
+    printContainer(numbersVector, numbersList);
+    cout << endl;
+
+    cout << "Результаты:" << endl;
+    cout << "Осталось элементов в Vector: " << numbersVector.size() << endl;
+    cout << "Осталось элементов в List:   " << numbersList.size() << endl;
+
+    return 0;
+}
+
+#include <iostream>
+#include <string>
+#include <array>
+#include <vector>
+#include <list>
+#include <algorithm>
+#include <windows.h>
+
+using namespace std;
+
+struct Student {
+    string name;
+    int id;
+    double gpa;
+};
+
+void printStudent(const Student& student) {
+    cout << "<" << student.id << ">:'" << student.name << "'(" << student.gpa << ")" << endl;
+}
+
+template <typename Container>
+void printFirstFive(const Container& container) {
+    auto current = container.begin();
+    for (int i = 0; i < 5; i++) {
+        printStudent(*current);
+        ++current;
+    }
+    cout << endl;
+}
+
+int main() {
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+
+    array<Student, 1000> studentsArray;
+    vector<Student> studentsVector;
+    list<Student> studentsList;
+
+    studentsVector.resize(1000);
+
+    for (int i = 0; i < 1000; i++) {
+        Student student = { "Вася" + to_string(i), i, (double)(rand() % 10001) / 100 };
+        studentsArray[i] = student;
+        studentsVector[i] = student;
+        studentsList.push_back(student);
+    }
+
+    auto gpaSort = [](const Student& a, const Student& b) {
+        return a.gpa > b.gpa;
+    };
+
+    auto idSort = [](const Student& a, const Student& b) {
+        return a.id < b.id;
+    };
+
+    auto nameSort = [](const Student& a, const Student& b) {
+        return a.name < b.name;
+    };
+
+    cout << "Сортировка по gpa:" << endl;
+    sort(studentsArray.begin(), studentsArray.end(), gpaSort);
+    sort(studentsVector.begin(), studentsVector.end(), gpaSort);
+    studentsList.sort(gpaSort);
+
+    printFirstFive(studentsArray);
+    printFirstFive(studentsVector);
+    printFirstFive(studentsList);
+
+    cout << "Сортировка по id:" << endl;
+    sort(studentsArray.begin(), studentsArray.end(), idSort);
+    sort(studentsVector.begin(), studentsVector.end(), idSort);
+    studentsList.sort(idSort);
+
+    printFirstFive(studentsArray);
+    printFirstFive(studentsVector);
+    printFirstFive(studentsList);
+
+    cout << "Сортировка по name:" << endl;
+    sort(studentsArray.begin(), studentsArray.end(), nameSort);
+    sort(studentsVector.begin(), studentsVector.end(), nameSort);
+    studentsList.sort(nameSort);
+
+    printFirstFive(studentsArray);
+    printFirstFive(studentsVector);
+    printFirstFive(studentsList);
+
+    return 0;
+}
+
+#include <iostream>
+#include <string>
+#include <array>
+#include <vector>
+#include <list>
+#include <algorithm>
+#include <iterator>
+#include <windows.h>
+
+using namespace std;
+
+bool isVowel(char c) {
+    c = tolower(static_cast<unsigned char>(c));
+    return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u');
+}
+
+void replaceVowels(string& s) {
+    transform(s.begin(), s.end(), s.begin(), [](char c) {
+        return isVowel(c) ? '*' : c;
+    });
+}
+
+template <typename Container>
+void printContainer(const Container& container) {
+    for (const auto& elem : container) {
+        cout << elem << " ";
+    }
+    cout << endl;
+}
+
+template <typename Container>
+void printWordsStartingWithA(const Container& container) {
+    for (const auto& word : container) {
+        if (!word.empty() && word[0] == 'a') {
+            cout << word << endl;
+        }
+    }
+}
+
+int main() {
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+
+    array<string, 50> arr = {
+        "fluctuation", "total", "different", "suntan", "industry", "exercise",
+        "beer", "sum", "substitute", "triangle", "sick", "gem", "tragedy",
+        "suit", "gallery", "owner", "cherry", "wound", "friendly", "galaxy",
+        "execute", "so", "leader", "hole", "shift", "haunt", "apathy",
+        "technology", "last", "consensus", "company", "board", "pony", "tumble",
+        "dawn", "record", "recommendation", "kettle", "ally", "patrol", "insert",
+        "meat", "extraterrestrial", "deliver", "burn", "storm", "reliance",
+        "disturbance", "payment", "observation"
+    };
+
+    vector<string> vec(arr.begin(), arr.end());
+    list<string> listik(arr.begin(), arr.end());
+
+    cout << "Слова на 'a':" << endl;
+    printWordsStartingWithA(arr);
+    cout << endl;
+    printWordsStartingWithA(vec);
+    cout << endl;
+    printWordsStartingWithA(listik);
+    cout << endl;
+
+    cout << "Самое длинное слово:" << endl;
+    cout << *max_element(arr.begin(), arr.end(),
+        [](const string& a, const string& b) { return a.size() < b.size(); }) << endl;
+    cout << *max_element(vec.begin(), vec.end(),
+        [](const string& a, const string& b) { return a.size() < b.size(); }) << endl;
+    cout << *max_element(listik.begin(), listik.end(),
+        [](const string& a, const string& b) { return a.size() < b.size(); }) << endl;
+    cout << endl;
+
+    for (auto& s : arr) {
+        replaceVowels(s);
+    }
+    for (auto& s : vec) {
+        replaceVowels(s);
+    }
+    for (auto& s : listik) {
+        replaceVowels(s);
+    }
+
+    cout << "Никаких гласных:" << endl;
+    printContainer(arr);
+    cout << endl;
+    printContainer(vec);
+    cout << endl;
+    printContainer(listik);
+    cout << endl;
+
+    vector<string> new_vec;
+    list<string> new_list;
+    array<string, 50> new_arr = arr;
+
+    copy_if(new_arr.begin(), new_arr.end(), back_inserter(new_list),
+        [](const string& a) { return a.size() > 7; });
+
+    copy_if(vec.begin(), vec.end(), back_inserter(new_vec),
+        [](const string& a) { return a.size() > 7; });
+
+    cout << "Слова на 7+ символов:" << endl;
+    printContainer(new_vec);
+    cout << endl;
+    printContainer(new_list);
+
+    return 0;
+}
+
+#include <iostream>
+#include <array>
+#include <vector>
+#include <list>
+#include <random>
+#include <chrono>
+#include <iterator>
+#include <windows.h>
+
+using namespace std;
+
+template <typename F, typename... Args>
+double getTime(F&& func, Args&&... args) {
+    auto start = chrono::steady_clock::now();
+    func(args...);
+    auto end = chrono::steady_clock::now();
+    chrono::duration<double, milli> elapsed = end - start;
+    return elapsed.count();
+}
+
+int main() {
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> distrib(0, 1000);
+
+    array<int, 100000> numbersArray;
+    vector<int> numbersVector;
+    list<int> numbersList;
+
+    numbersVector.resize(100000);
+
+    for (int i = 0; i < 100000; i++) {
+        numbersArray[i] = distrib(gen);
+        numbersVector[i] = distrib(gen);
+        numbersList.push_back(distrib(gen));
+    }
+
+    cout << "(Время в миллисекундах)" << endl;
+    cout << endl;
+
+    cout << "Обход элементов и сумма:" << endl;
+    cout << endl;
+
+    cout << "Время array: " << getTime([](array<int, 100000>& numbersArray) {
+        int sum = 0;
+        for (int i = 0; i < 100000; i++) {
+            sum += numbersArray[i];
+        }
+        cout << "Сумма: " << sum << endl;
+    }, numbersArray) << endl;
+
+    cout << "Время vector: " << getTime([](vector<int>& numbersVector) {
+        int sum = 0;
+        for (int i = 0; i < 100000; i++) {
+            sum += numbersVector[i];
+        }
+        cout << "Сумма: " << sum << endl;
+    }, numbersVector) << endl;
+
+    cout << "Время list: " << getTime([](list<int>& numbersList) {
+        int sum = 0;
+        auto current = numbersList.begin();
+        for (int i = 0; i < 100000; i++) {
+            sum += *current;
+            current++;
+        }
+        cout << "Сумма: " << sum << endl;
+    }, numbersList) << endl;
+
+    cout << endl;
+    cout << "Произвольный доступ:" << endl;
+    cout << endl;
+
+    cout << "Время array: " << getTime([](array<int, 100000>& numbersArray) {
+        cout << "Элементы: " << numbersArray[0] << " " << numbersArray[25000] << " " << numbersArray[50000] << " " << numbersArray[75000] << " " << numbersArray[99999] << endl;
+    }, numbersArray) << endl;
+
+    cout << "Время vector: " << getTime([](vector<int>& numbersVector) {
+        cout << "Элементы: " << numbersVector[0] << " " << numbersVector[25000] << " " << numbersVector[50000] << " " << numbersVector[75000] << " " << numbersVector[99999] << endl;
+    }, numbersVector) << endl;
+
+    cout << "Время list: " << getTime([](list<int>& numbersList) {
+        auto current = numbersList.begin();
+        cout << "Элементы: "
+             << *current << " "
+             << *next(current, 25000) << " "
+             << *next(current, 50000) << " "
+             << *next(current, 75000) << " "
+             << *next(current, 99999) << endl;
+    }, numbersList) << endl;
+
+    cout << endl;
+    cout << "Вставка в конец:" << endl;
+    cout << endl;
+
+    cout << "[array не поддерживает]" << endl;
+
+    cout << "Время vector: " << getTime([](vector<int>& numbersVector) {
+        for (int i = 0; i < 1000; i++) {
+            numbersVector.push_back(i);
+        }
+    }, numbersVector) << endl;
+
+    cout << "Время list: " << getTime([](list<int>& numbersList) {
+        for (int i = 0; i < 1000; i++) {
+            numbersList.push_back(i);
+        }
+    }, numbersList) << endl;
+
+    cout << endl;
+    cout << "Вставка в середину:" << endl;
+    cout << endl;
+
+    cout << "[array не поддерживает]" << endl;
+
+    cout << "Время vector: " << getTime([](vector<int>& numbersVector) {
+        for (int i = 0; i < 100; i++) {
+            numbersVector.insert(numbersVector.begin() + 50000, i);
+        }
+    }, numbersVector) << endl;
+
+    cout << "Время list: " << getTime([](list<int>& numbersList) {
+        auto current = next(numbersList.begin(), 50000);
+        for (int i = 0; i < 100; i++) {
+            numbersList.insert(current, i);
+        }
+    }, numbersList) << endl;
+
+    cout << endl;
+    cout << "Удаление из середины:" << endl;
+    cout << endl;
+
+    cout << "[array не поддерживает]" << endl;
+
+    cout << "Время vector: " << getTime([](vector<int>& numbersVector) {
+        for (int i = 0; i < 100; i++) {
+            numbersVector.erase(numbersVector.begin() + 50000);
+        }
+    }, numbersVector) << endl;
+
+    cout << "Время list: " << getTime([](list<int>& numbersList) {
+        auto current = next(numbersList.begin(), 50000);
+        for (int i = 0; i < 100; i++) {
+            auto temp = current;
+            ++current;
+            numbersList.erase(temp);
+        }
+    }, numbersList) << endl;
+
+    return 0;
+}
